@@ -20,7 +20,7 @@ Create secrets.json in the same folder as the script. Example content:
       "db_user": "your_db_username",
       "db_password": "your_db_password",
       "db_name": "archivesspace_db_name",
-      "aspace_base_url": "https://archivessearch.lib.uconn.edu/staff/resources/",
+      "aspace_base_url": "https://ARCHIVESSPACEEXAMPLE.edu/staff/resources/",
       "output_csv": "bad_xml_report.csv"
     }
 
