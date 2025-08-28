@@ -21,25 +21,33 @@ output_csv = secrets["output_csv"]
 # XML validation helper
 # ----------------------------
 def validate_xml_fragment(text):
-    """
-    Wraps text in a root element and validates as XML.
-    Returns (is_valid, error_message, highlighted_text).
-    """
+    """Validate XML fragment by wrapping in a dummy root element."""
+    # Escape stray ampersands
     safe_text = re.sub(r'&(?![a-zA-Z]+;|#\d+;)', '&amp;', text)
+
     wrapped = f"<root>{safe_text}</root>"
     parser = etree.XMLParser(recover=False)
 
     try:
-        etree.fromstring(wrapped.encode("utf-8"), parser)
+        etree.fromstring(wrapped.encode("utf-8"), parser=parser)
         return True, None, text
     except etree.XMLSyntaxError as e:
-        error_str = str(e)
+        error_message = str(e)
+
+        # Ignore any ns2-related namespace errors
+        if "ns2" in error_message:
+            return True, None, text
+
+        # Highlight problematic part for real errors
         highlighted = text
-        if e.position:
-            _, column = e.position
-            if column < len(text):
-                highlighted = text[:column] + "⟨ERROR⟩" + text[column:]
-        return False, error_str, highlighted
+        try:
+            line, col = e.position
+            idx = sum(len(l) + 1 for l in text.splitlines()[:line - 1]) + col
+            highlighted = text[:idx] + "<<<ERROR HERE>>>" + text[idx:]
+        except Exception:
+            pass
+
+        return False, error_message, highlighted
 
 # ----------------------------
 # Database connection
@@ -143,4 +151,4 @@ with conn.cursor() as cursor, open(output_csv, "w", newline="", encoding="utf-8"
                 print(f"Error parsing notes for AO {ao_id}: {e}")
 
 conn.close()
-print(f"Scan complete. Results saved to {output_csv}")
+print(f"✅ Scan complete. Results saved to {output_csv}")
