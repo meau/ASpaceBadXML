@@ -34,8 +34,8 @@ def validate_xml_fragment(text):
     except etree.XMLSyntaxError as e:
         error_message = str(e)
 
-        # Ignore any ns2-related namespace errors
-        if "ns2" in error_message:
+        # Ignore any ns2- or xlink-related namespace errors
+        if "ns2" in error_message or "xlink" in error_message:
             return True, None, text
 
         # Highlight problematic part for real errors
@@ -48,7 +48,6 @@ def validate_xml_fragment(text):
             pass
 
         return False, error_message, highlighted
-
 # ----------------------------
 # Database connection
 # ----------------------------
@@ -151,4 +150,4 @@ with conn.cursor() as cursor, open(output_csv, "w", newline="", encoding="utf-8"
                 print(f"Error parsing notes for AO {ao_id}: {e}")
 
 conn.close()
-print(f"✅ Scan complete. Results saved to {output_csv}")
+print(f"Scan complete. Results saved to {output_csv}")
